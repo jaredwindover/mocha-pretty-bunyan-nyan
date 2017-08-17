@@ -1,6 +1,6 @@
 {
-  "name": "mocha-pretty-bunyan-nyan",
-  "version": "1.0.3",
+  "name": "@jaredwindover/mocha-pretty-bunyan-nyan",
+  "version": "1.0.5",
   "description": "mocha pretty output bunyan",
   "main": "index.js",
   "keywords": [
