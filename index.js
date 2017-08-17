@@ -4,39 +4,40 @@ const bunyan = require('bunyan');
 const mocha = require('mocha');
 const PrettyStream = require('bunyan-prettystream');
 
+let prettyStdOut = new PrettyStream();
+prettyStdOut.pipe(process.stdout);
+
 let mute = false,
     level = 'trace';
 
+var _createLogger = bunyan.createLogger;
+bunyan.createLogger = function(opts) {
+  opts.streams = [{
+    level: mute ? 99 : level,
+    type: 'raw',
+    stream: prettyStdOut
+  }];
+
+  return _createLogger(opts);
+};
+
 let exp = function(runner, options) {
 	let reporter = mocha.reporters.nyan;
-  if (options.reporter){
-    if (mocha.reporters[options.reporter]!==undefined){
+	const reporterOptions = options.reporterOptions;
+  if (reporterOptions.reporter){
+    if (mocha.reporters[reporterOptions.reporter]!==undefined){
 			// default mocha reporter ?
-			reporter = mocha.reporters[options.reporter];
+			reporter = mocha.reporters[reporterOptions.reporter];
     } else {
 			// try to require it
-			reporter = require(options.reporter);
+			reporter = require(reporterOptions.reporter);
     }
   }
 
-  mute = options.mute || mute;
-  level = options.level || level;
+  mute = reporterOptions.mute || mute;
+  level = reporterOptions.level || level;
 
-	let prettyStdOut = new PrettyStream();
-	prettyStdOut.pipe(process.stdout);
-
-	var _createLogger = bunyan.createLogger;
-	bunyan.createLogger = function(options) {
-    options.streams = [{
-      level: mute ? 99 : level,
-      type: 'raw',
-      stream: prettyStdOut
-    }];
-
-    return _createLogger(options);
-	};
-
-	return reporter(runner, options);
+	return new reporter(runner, options);
 };
 
 module.exports = exp;
